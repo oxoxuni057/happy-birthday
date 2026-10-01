@@ -447,7 +447,13 @@ function moveCandleRandomly() {
      * 상단 HUD(스테이지/점수/게이지) 아래에서부터 움직이도록 함.
      */
 
-    const minY = 80;
+    const hud =
+        document.querySelector('.hud');
+
+    const minY =
+        hud
+            ? hud.offsetTop + hud.offsetHeight + 8
+            : 80;
 
     const maxY =
         Math.max(
@@ -1072,17 +1078,34 @@ function renderFrame() {
 
 
     /*
-     * 모바일에서도 선명하게 보이도록
-     * 실제 Canvas 크기는 고정하고 CSS로 표시 크기를 조절.
+     * 그리는 좌표는 120x160 기준 그대로 두고,
+     * 실제 픽셀 수만 화면 표시 크기 × 기기 배율만큼 키워서
+     * 큰 화면이나 레티나 화면에서도 흐리지 않게 함.
      */
 
+    const pixelRatio =
+        Math.min(
+            3,
+            Math.max(
+                1,
+                (window.devicePixelRatio || 1) *
+                ((canvas.clientWidth || w) / w)
+            )
+        );
+
+    const pixelW =
+        Math.round(w * pixelRatio);
+
+    const pixelH =
+        Math.round(h * pixelRatio);
+
     if (
-        canvas.width !== w ||
-        canvas.height !== h
+        canvas.width !== pixelW ||
+        canvas.height !== pixelH
     ) {
 
-        canvas.width = w;
-        canvas.height = h;
+        canvas.width = pixelW;
+        canvas.height = pixelH;
 
     }
 
@@ -1092,7 +1115,14 @@ function renderFrame() {
      * 좌표가 누적되지 않도록 매 프레임 초기화.
      */
 
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.setTransform(
+        canvas.width / w,
+        0,
+        0,
+        canvas.height / h,
+        0,
+        0
+    );
 
     ctx.clearRect(
         0,

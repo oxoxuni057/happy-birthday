@@ -58,13 +58,16 @@ body {
    전체 앱 (게임 화면)
 ========================================== */
 
+/*
+ * 폰 / 태블릿 / PC 모두 화면 전체를 게임 화면으로 사용.
+ * 큰 화면에서의 글자·버튼 크기는 파일 아래쪽
+ * "태블릿 / PC" 구간에서 따로 키움.
+ */
 .app-container {
     width: 100%;
-    max-width: 420px;
 
     height: 100dvh;
     min-height: 100dvh;
-    max-height: 850px;
 
     background: linear-gradient(var(--night1) 0%, var(--night2) 55%, var(--night3) 100%);
     color: #fff;
@@ -91,26 +94,26 @@ body {
     pointer-events: none;
 }
 
+/*
+ * 별 : 작은 점 무늬를 반복 타일로 깔아서
+ * 화면이 넓어져도 하늘 전체에 별이 보이게 함.
+ */
 .stars,
 .stars::after {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 4px;
-    height: 4px;
-    background: transparent;
-    box-shadow:
-        40px 110px #fff, 120px 80px var(--yellow), 300px 130px #fff,
-        350px 210px #fff, 70px 240px var(--cyan), 210px 170px #fff,
-        260px 270px var(--yellow), 30px 350px #fff, 380px 340px #fff,
-        160px 320px #fff, 330px 420px var(--cyan), 90px 460px #fff;
+    inset: 0;
+    background-image:
+        radial-gradient(circle, #fff 0 2px, transparent 2.5px),
+        radial-gradient(circle, var(--yellow) 0 2px, transparent 2.5px),
+        radial-gradient(circle, var(--cyan) 0 2px, transparent 2.5px);
+    background-size: 170px 190px, 230px 250px, 310px 290px;
+    background-position: 20px 30px, 120px 90px, 60px 170px;
     animation: twinkle 1.2s steps(2) infinite;
 }
 
 .stars::after {
     content: "";
-    left: 19px;
-    top: 13px;
+    background-position: 95px 120px, 15px 200px, 210px 40px;
     animation-delay: 0.6s;
 }
 
@@ -1484,12 +1487,291 @@ h2 {
 
 
 /* ==========================================
-   PC에서는 기존 느낌 유지
+   마우스가 있는 기기 (PC) : 버튼에 올리면 살짝 떠오름
 ========================================== */
 
-@media (min-width: 421px) {
+@media (hover: hover) {
 
-    .app-container {
-        height: min(100dvh, 850px);
+    .next-btn:hover,
+    .action-btn:hover,
+    .prev-btn:hover {
+        transform: translateY(-2px);
+
+        box-shadow:
+            inset 0 -5px 0 rgba(0, 0, 0, 0.2),
+            0 8px 0 var(--ink);
+    }
+
+    .flip-card:hover .q-block {
+        animation-duration: 0.3s;
+    }
+}
+
+
+/* ==========================================
+   태블릿 / PC
+   화면이 넓고 높으면 전체적으로 크게.
+   (촛불 크기를 바꾸면 JS가 실제 크기를 읽어서
+    위치 계산을 알아서 맞춤)
+========================================== */
+
+@media (min-width: 700px) and (min-height: 760px) {
+
+    .page {
+        padding-top: 110px;
+    }
+
+    .content {
+        max-width: 540px;
+    }
+
+    /* HUD */
+    .hud {
+        top: 20px;
+        left: 24px;
+        right: 24px;
+    }
+
+    .chip {
+        font-size: 13px;
+        padding: 8px 10px 7px;
+    }
+
+    .score,
+    .gauge b {
+        font-size: 11px;
+    }
+
+    .bar {
+        width: 150px;
+        height: 22px;
+    }
+
+    .hearts {
+        font-size: 24px;
+    }
+
+    .moon {
+        top: 120px;
+        right: 8%;
+        width: 80px;
+        height: 80px;
+    }
+
+    .hill {
+        height: 200px;
+    }
+
+    .hill.back {
+        height: 240px;
+    }
+
+    /* 글자 */
+    h1 {
+        font-size: 64px;
+        margin-bottom: 20px;
+    }
+
+    .name-tag {
+        font-size: 40px;
+    }
+
+    .stage-tag {
+        font-size: 12px;
+        padding: 8px 10px 7px;
+    }
+
+    h2 {
+        font-size: 2.2rem;
+        margin-bottom: 14px;
+    }
+
+    .sub-text {
+        font-size: 1.1rem;
+        margin-bottom: 24px;
+    }
+
+    /* 1페이지 */
+    .intro-item {
+        width: 230px;
+        height: 230px;
+    }
+
+    .intro-img {
+        width: 180px;
+        height: 180px;
+    }
+
+    .intro-fallback {
+        font-size: 8rem;
+    }
+
+    .dialog {
+        font-size: 1.1rem;
+        padding: 28px 22px 24px;
+    }
+
+    .dialog .who,
+    .click-hint {
+        font-size: 13px;
+    }
+
+    /* 버튼 */
+    .next-btn,
+    .action-btn,
+    .prev-btn {
+        font-size: 1.15rem;
+        padding: 14px 28px;
+        min-height: 60px;
+    }
+
+    .play-btn {
+        font-size: 22px;
+        padding: 20px 40px 22px;
+    }
+
+    .nav-buttons {
+        gap: 14px;
+        margin-top: 28px;
+    }
+
+    /* 2페이지 케이크 */
+    .cake-container {
+        height: 260px;
+        margin-top: 150px;
+    }
+
+    .cake-img-box {
+        width: 300px;
+        height: 250px;
+    }
+
+    /* 촛불 (6페이지 마지막 문구 간격도 같이 맞춤) */
+    .runaway-candle {
+        width: 150px;
+        height: 200px;
+    }
+
+    .final-msg {
+        font-size: 1.6rem;
+        margin-top: calc(200px + 50px);
+    }
+
+    /* 3페이지 카드 */
+    .card-slider {
+        gap: 16px;
+    }
+
+    .flip-card {
+        height: 112px;
+    }
+
+    .q-block {
+        width: 62px;
+        height: 62px;
+        font-size: 24px;
+    }
+
+    .card-label b {
+        font-size: 16px;
+    }
+
+    .card-label small,
+    .flip-card-back {
+        font-size: 1rem;
+    }
+
+    /* 4페이지 편지 */
+    .letter-box {
+        font-size: 1.05rem;
+        padding: 28px;
+        max-height: 48vh;
+    }
+
+    /* 5페이지 소원권 */
+    .coupon-list {
+        gap: 16px;
+    }
+
+    .coupon-item {
+        font-size: 1.1rem;
+        padding: 16px 20px;
+    }
+
+    .coupon-item::after {
+        font-size: 10px;
+    }
+
+    /* 연출 글자 */
+    .pop-text {
+        font-size: 18px;
+    }
+
+    .pop-text.big {
+        font-size: 24px;
+    }
+
+    .stage-clear span {
+        font-size: 48px;
+    }
+
+    /* 컷씬 */
+    .gf-pop-content {
+        max-width: 460px;
+    }
+
+    .flash-sfx {
+        font-size: 3rem;
+    }
+
+    .gf-person-img {
+        width: 200px;
+        height: 200px;
+    }
+
+    .gf-dialog {
+        font-size: 1.4rem;
+    }
+}
+
+
+/* ==========================================
+   폰을 가로로 눕혔을 때 : 세로로 돌려 달라는 안내
+   (높이가 너무 낮아서 페이지가 다 안 들어감)
+========================================== */
+
+.rotate-notice {
+    display: none;
+}
+
+@media (orientation: landscape) and (max-height: 500px) {
+
+    .rotate-notice {
+        position: fixed;
+        inset: 0;
+        z-index: 1000;
+
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+
+        background: var(--night1);
+        color: #fff;
+
+        font-size: 1.1rem;
+        text-align: center;
+    }
+
+    .rotate-notice b {
+        font-family: var(--font-en);
+        font-size: 36px;
+        font-weight: 400;
+        color: var(--yellow);
+        -webkit-text-stroke: 8px var(--ink);
+        paint-order: stroke fill;
+
+        animation: wobble 0.5s steps(2) infinite;
     }
 }
