@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+    <!-- ✏️ 브라우저 탭에 보이는 제목 -->
+    <title>Happy Birthday 🎂</title>
+
+    <!-- 픽셀 폰트 (한글: Galmuri / 영문: Press Start 2P) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/galmuri/dist/galmuri.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap">
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<!--
+==========================================================
+  ✏️ 수정 가이드
+
+  이 파일에서 "✏️" 표시가 붙은 곳만 고치면 돼요.
+  태그(<p>, <span> 등)와 class / id / onclick 은 그대로 두고
+  태그 사이의 글자만 바꿔 주세요.
+
+  1. 받는 사람 이름        → PAGE 1 이름표, PAGE 4 편지의 TO.
+  2. 좋아하는 모습 3개     → PAGE 3 카드 뒷면 (flip-card-back)
+  3. 편지                  → PAGE 4 letter-box
+  4. 소원권 3개            → PAGE 5 coupon-item
+  5. 그 밖의 안내 문구     → 각 페이지 h2 / sub-text / 버튼
+
+  - 줄바꿈은 <br> 을 넣으면 돼요.
+  - 문단을 늘리려면 <p>...</p> 를 복사해서 붙여 넣으면 돼요.
+  - 카드나 소원권을 늘리려면 <div class="flip-card">...</div>
+    또는 <div class="coupon-item">...</div> 덩어리를 통째로 복사하면 돼요.
+  - 촛불이 하는 말, MISS! / +100 / ITEM GET! / STAGE CLEAR! 같은
+    게임 연출 문구는 script.js 의 "✏️" 표시된 곳에서 바꿀 수 있어요.
+  - 색은 style.css 맨 위 :root 에서 바꿀 수 있어요.
+  - 이미지는 같은 이름의 파일로 바꿔 넣으면 돼요.
+      intro.png     : 1페이지 첫 화면 이미지 (없으면 🎁 이모지)
+      cake.png      : 2페이지 케이크
+      grabber.png   : 6페이지 컷씬에 나오는 인물
+      hand_grab.png : 6페이지에서 촛불을 잡는 캐릭터
+==========================================================
+-->
+
+<body>
+
+    <div class="app-container" id="appContainer">
+
+        <!-- 🌙 배경 (별 / 달 / 언덕) : 장식이라 수정할 필요 없음 -->
+        <div class="bg-layer" aria-hidden="true">
+            <div class="stars"></div>
+            <div class="moon"></div>
+            <div class="hill back"></div>
+            <div class="hill"></div>
+        </div>
+
+
+        <!-- 🎮 상단 게임 화면 표시 (스테이지 / 점수 / 진행 게이지) -->
+        <div class="hud" aria-hidden="true">
+            <div class="hud-left">
+                <span class="chip" id="stageLabel">STAGE 1/6</span>
+                <span class="score">SCORE <span id="scoreText">000000</span></span>
+            </div>
+            <div class="hud-right">
+                <span class="gauge">
+                    <b>HP</b>
+                    <span class="bar"><i id="progressBar"></i></span>
+                </span>
+                <span class="hearts">♥♥♥</span>
+            </div>
+        </div>
+
+
+        <!-- 💥 도망다니는 & 붙잡히는 Canvas 촛불 💥 -->
+        <div
+            class="runaway-candle"
+            id="runawayCandle"
+            onclick="catchCandle()"
+            aria-label="도망가는 촛불"
+        >
+            <canvas id="candleCanvas"></canvas>
+
+            <!-- 6페이지에서 촛불 잡는 햄스터 (팔만 촛불 위에 겹침) -->
+            <img
+                src="hand_grab.png"
+                alt=""
+                class="candle-grabber"
+                aria-hidden="true"
+                onerror="this.remove()"
+            >
+        </div>
+
+
+        <!-- 💥 플래시 만화 스타일 컷씬 (6페이지 진입 시) -->
+        <div class="gf-grab hidden" id="gfGrab">
+            <div class="speed-lines"></div>
+
+            <div class="gf-pop-content">
+                <!-- ✏️ 컷씬 효과음 -->
+                <span class="flash-sfx">콰쾅-!!</span>
+
+                <!-- 잡는 사람 캐릭터 이미지 -->
+                <img
+                    src="grabber.png"
+                    alt="잡는 사람"
+                    class="gf-person-img"
+                    onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';"
+                >
+
+                <span class="gf-emoji" style="display:none;">🫵</span>
+
+                <!-- ✏️ 컷씬 대사 -->
+                <span class="gf-dialog">
+                    "야, 일루와."
+                </span>
+            </div>
+        </div>
+
+
+        <!-- 🏆 촛불을 끄면 뜨는 STAGE CLEAR! (문구는 script.js 에서 수정) -->
+        <div class="stage-clear hidden" id="stageClear">
+            <span id="stageClearText">STAGE CLEAR!</span>
+        </div>
+
+
+        <!-- ======================================
+             PAGE 1 : 인트로
+        ======================================= -->
+        <section class="page active" id="page-1">
+            <div class="content">
+
+                <h1>HBD!</h1>
+
+                <!-- ✏️ [이름] 부분을 받는 사람 이름으로 바꾸기 (짧을수록 예쁨) -->
+                <span class="name-tag">[이름]</span>
+
+                <!--
+                    ✏️ 첫 화면 이미지
+                    intro.png 파일을 이 폴더에 넣으면 그 이미지가 보여요.
+                    (다른 이름/형식이면 src="..." 를 바꾸기. 예: src="photo.jpg")
+                    파일이 없으면 아래 🎁 이모지가 대신 보여요.
+                -->
+                <div class="intro-item">
+                    <div class="burst"></div>
+                    <img
+                        src="intro.png"
+                        alt="첫 화면 이미지"
+                        class="intro-img"
+                        onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';"
+                    >
+                    <span class="intro-fallback" style="display:none;">🎁</span>
+                </div>
+
+                <div class="dialog">
+                    <!-- ✏️ 말하는 사람 이름표 (예: 보내는 사람 이름) -->
+                    <span class="who">???</span>
+
+                    <!-- ✏️ 첫 인사 -->
+                    <p>
+                        생일 축하해 !!<br>
+                        오늘 널 위해 작은 선물을 준비했어.
+                    </p>
+
+                    <span class="next-mark">▼</span>
+                </div>
+
+                <div class="play-wrap">
+                    <button class="next-btn play-btn" onclick="nextPage()">
+                        ▶ PLAY
+                    </button>
+                    <span class="click-hint">CLICK!</span>
+                </div>
+
+            </div>
+        </section>
+
+
+        <!-- ======================================
+             PAGE 2 : 케이크 & 도망가는 촛불
+             (촛불 관련 문구는 script.js 에서 수정)
+        ======================================= -->
+        <section class="page" id="page-2">
+            <div class="content">
+
+                <span class="stage-tag">STAGE 2</span>
+
+                <h2>소원 빌고 촛불을 끄자!</h2>
+
+                <p class="sub-text" id="statusMsg2">
+                    케이크 위 촛불을 눌러 봐.
+                </p>
+
+                <div class="cake-container" id="cakeContainer">
+
+                    <div class="cake-img-box">
+
+                        <img
+                            src="cake.png"
+                            alt="생일 케이크"
+                            id="cakeImg"
+                            onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+                        >
+
+                        <div
+                            class="cake-placeholder"
+                            style="display:none;"
+                        >
+                            🎂
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="nav-buttons page2-buttons">
+                    <button class="prev-btn" onclick="prevPage()">
+                        이전
+                    </button>
+
+                    <button class="next-btn" onclick="nextPage()">
+                        일단 넘어가기 ▶
+                    </button>
+                </div>
+
+            </div>
+        </section>
+
+
+        <!-- ======================================
+             PAGE 3 : 내가 좋아하는 너의 모습
+             ✏️ 카드 뒷면(flip-card-back)의 <p> 안 내용을 작성
+             (카드를 처음 뒤집을 때마다 +100 점)
+        ======================================= -->
+        <section class="page" id="page-3">
+            <div class="content">
+
+                <span class="stage-tag">STAGE 3</span>
+
+                <h2>내가 좋아하는 너의 모습</h2>
+
+                <p class="sub-text">
+                    ? 블록을 눌러 봐. 촛불은 아직 도망 중이야.
+                </p>
+
+                <div class="card-slider">
+
+                    <!-- 카드 1 -->
+                    <div class="flip-card" onclick="flipCard(this)">
+                        <div class="flip-card-inner">
+
+                            <div class="flip-card-front">
+                                <span class="q-block">?</span>
+                                <span class="card-label">
+                                    <b>No. 01</b>
+                                    <small>눌러서 확인</small>
+                                </span>
+                            </div>
+
+                            <div class="flip-card-back">
+                                <!-- ✏️ 좋아하는 모습 1 (두 줄 정도가 적당, 줄바꿈은 <br>) -->
+                                <p>
+                                    좋아하는 모습 1을 작성하시오.
+                                </p>
+                            </div>
+
+                        </div>
+                    </div>
+
+
+                    <!-- 카드 2 -->
+                    <div class="flip-card" onclick="flipCard(this)">
+                        <div class="flip-card-inner">
+
+                            <div class="flip-card-front">
+                                <span class="q-block">?</span>
+                                <span class="card-label">
+                                    <b>No. 02</b>
+                                    <small>눌러서 확인</small>
+                                </span>
+                            </div>
+
+                            <div class="flip-card-back">
+                                <!-- ✏️ 좋아하는 모습 2 -->
+                                <p>
+                                    좋아하는 모습 2를 작성하시오.
+                                </p>
+                            </div>
+
+                        </div>
+                    </div>
+
+
+                    <!-- 카드 3 -->
+                    <div class="flip-card" onclick="flipCard(this)">
+                        <div class="flip-card-inner">
+
+                            <div class="flip-card-front">
+                                <span class="q-block">?</span>
+                                <span class="card-label">
+                                    <b>No. 03</b>
+                                    <small>눌러서 확인</small>
+                                </span>
+                            </div>
+
+                            <div class="flip-card-back">
+                                <!-- ✏️ 좋아하는 모습 3 -->
+                                <p>
+                                    좋아하는 모습 3을 작성하시오.
+                                </p>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+
+
+                <div class="nav-buttons">
+                    <button class="prev-btn" onclick="prevPage()">
+                        이전
+                    </button>
+
+                    <button class="next-btn" onclick="nextPage()">
+                        다음 ▶
+                    </button>
+                </div>
+
+            </div>
+        </section>
+
+
+        <!-- ======================================
+             PAGE 4 : 편지
+             ✏️ letter-box 안의 내용을 작성
+             (길어지면 상자 안에서 스크롤돼요)
+        ======================================= -->
+        <section class="page" id="page-4">
+            <div class="content">
+
+                <span class="stage-tag">STAGE 4</span>
+
+                <h2>조금은 진지한 편지</h2>
+
+                <div class="letter-box">
+
+                    <!-- ✏️ 받는 사람 -->
+                    <p class="letter-to">TO. 받는 사람 이름을 작성하시오.</p>
+
+                    <!-- ✏️ 편지 본문 (문단을 늘리려면 <p>...</p> 를 복사) -->
+                    <p>
+                        편지의 첫 문단을 작성하시오.
+                    </p>
+
+                    <p>
+                        편지의 두 번째 문단을 작성하시오.
+                    </p>
+
+                    <!-- ✏️ 보내는 사람 -->
+                    <p class="letter-from">
+                        FROM. 보내는 사람 이름을 작성하시오.
+                    </p>
+
+                </div>
+
+
+                <div class="nav-buttons">
+
+                    <button class="prev-btn" onclick="prevPage()">
+                        이전
+                    </button>
+
+                    <button class="next-btn" onclick="nextPage()">
+                        소원권 받기 ▶
+                    </button>
+
+                </div>
+
+            </div>
+        </section>
+
+
+        <!-- ======================================
+             PAGE 5 : 소원권 (아이템 획득)
+             ✏️ coupon-item 안의 글자를 작성
+             (오른쪽 "ITEM" 표시는 style.css 에서 자동으로 붙어요)
+        ======================================= -->
+        <section class="page" id="page-5">
+            <div class="content">
+
+                <span class="stage-tag">STAGE 5</span>
+
+                <h2>생일 기념 소원권</h2>
+
+                <p class="sub-text">
+                    필요할 때 캡처해서 보여 줘.
+                </p>
+
+
+                <div class="coupon-list">
+
+                    <!-- ✏️ 소원권 1 (앞에 이모지 하나 붙이면 예뻐요) -->
+                    <div class="coupon-item">
+                        🎟️ 소원권 1을 작성하시오.
+                    </div>
+
+                    <!-- ✏️ 소원권 2 -->
+                    <div class="coupon-item">
+                        🎟️ 소원권 2를 작성하시오.
+                    </div>
+
+                    <!-- ✏️ 소원권 3 -->
+                    <div class="coupon-item">
+                        🎟️ 소원권 3을 작성하시오.
+                    </div>
+
+                </div>
+
+
+                <div class="nav-buttons">
+
+                    <button class="prev-btn" onclick="prevPage()">
+                        이전
+                    </button>
+
+                    <button
+                        class="next-btn final-go-btn"
+                        onclick="nextPage()"
+                    >
+                        보스 잡으러 가기 ▶
+                    </button>
+
+                </div>
+
+            </div>
+        </section>
+
+
+        <!-- ======================================
+             PAGE 6 : 보스 스테이지 (촛불 붙잡고 끄기)
+             촛불 관련 상태 문구는 script.js 에서 수정
+        ======================================= -->
+        <section class="page" id="page-6">
+            <div class="content">
+
+                <span class="stage-tag boss">BOSS STAGE</span>
+
+                <h2>최종 결전</h2>
+
+                <!-- 이 문구는 script.js 가 상황에 따라 바꿔요 -->
+                <p class="sub-text" id="finalStatus">
+                    드디어 촛불을 따라잡았다...!
+                </p>
+
+                <!-- ✏️ 마지막 한마디 -->
+                <p
+                    class="final-msg"
+                    id="finalMsgText"
+                >
+                    오늘 하루 누구보다 행복하길!
+                </p>
+
+
+                <div class="nav-buttons">
+
+                    <button class="prev-btn" onclick="prevPage()">
+                        이전
+                    </button>
+
+                    <button
+                        class="action-btn"
+                        onclick="location.reload()"
+                    >
+                        처음으로 ↺
+                    </button>
+
+                </div>
+
+            </div>
+        </section>
+
+
+        <!-- 브라운관 줄무늬 (맨 위에 얇게 덮는 장식) -->
+        <div class="scanlines" aria-hidden="true"></div>
+
+    </div>
+
+
+    <script src="script.js"></script>
+
+</body>
+</html>

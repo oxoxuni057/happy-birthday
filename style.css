@@ -1,0 +1,1495 @@
+/* ==========================================
+   ✏️ 색 바꾸기
+   아래 값만 바꾸면 사이트 전체 색이 같이 바뀌어요.
+========================================== */
+
+:root {
+    --ink: #111111;      /* 외곽선 / 그림자 */
+    --yellow: #ffe96b;   /* 제목, 강조 */
+    --red: #ff4d3d;      /* 버튼, 경고 */
+    --cyan: #7ff3ff;     /* 안내 문구, 스테이지 표시 */
+    --panel: #2a2060;    /* 카드 / 소원권 바탕 */
+
+    --night1: #1a1446;   /* 밤하늘 (위) */
+    --night2: #3b2a7a;   /* 밤하늘 (가운데) */
+    --night3: #6a3f8f;   /* 밤하늘 (아래) */
+
+    --font-ko: 'Galmuri11', 'Galmuri9', monospace;
+    --font-en: 'Press Start 2P', 'Galmuri11', monospace;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: inherit;
+    word-break: keep-all;
+}
+
+html {
+    width: 100%;
+    min-height: 100%;
+    background: #000;
+}
+
+body {
+    width: 100%;
+    min-height: 100dvh;
+    background-color: #000;
+
+    font-family: var(--font-ko);
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    overflow: hidden;
+
+    /* 아이폰 노치/홈바 영역 대응 */
+    padding:
+        env(safe-area-inset-top)
+        env(safe-area-inset-right)
+        env(safe-area-inset-bottom)
+        env(safe-area-inset-left);
+}
+
+
+/* ==========================================
+   전체 앱 (게임 화면)
+========================================== */
+
+.app-container {
+    width: 100%;
+    max-width: 420px;
+
+    height: 100dvh;
+    min-height: 100dvh;
+    max-height: 850px;
+
+    background: linear-gradient(var(--night1) 0%, var(--night2) 55%, var(--night3) 100%);
+    color: #fff;
+
+    position: relative;
+    overflow: hidden;
+
+    border: 5px solid var(--ink);
+}
+
+.hidden {
+    display: none !important;
+}
+
+
+/* ==========================================
+   배경 : 별 / 달 / 언덕 / 브라운관 줄무늬
+========================================== */
+
+.bg-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.stars,
+.stars::after {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 4px;
+    background: transparent;
+    box-shadow:
+        40px 110px #fff, 120px 80px var(--yellow), 300px 130px #fff,
+        350px 210px #fff, 70px 240px var(--cyan), 210px 170px #fff,
+        260px 270px var(--yellow), 30px 350px #fff, 380px 340px #fff,
+        160px 320px #fff, 330px 420px var(--cyan), 90px 460px #fff;
+    animation: twinkle 1.2s steps(2) infinite;
+}
+
+.stars::after {
+    content: "";
+    left: 19px;
+    top: 13px;
+    animation-delay: 0.6s;
+}
+
+@keyframes twinkle {
+    50% { opacity: 0.15; }
+}
+
+.moon {
+    position: absolute;
+    top: 96px;
+    right: 22px;
+
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+
+    background: var(--yellow);
+    border: 5px solid var(--ink);
+    box-shadow: inset -10px -6px 0 #f0c63a;
+
+    animation: bob 1.6s steps(2) infinite;
+}
+
+.moon::after {
+    content: "";
+    position: absolute;
+    left: 12px;
+    top: 14px;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #f0c63a;
+    box-shadow: 16px 13px 0 -2px #f0c63a;
+}
+
+.hill {
+    position: absolute;
+    left: -15%;
+    right: -15%;
+    bottom: -50px;
+    height: 150px;
+
+    background: #2a1b52;
+    border: 5px solid var(--ink);
+    border-radius: 50% 50% 0 0 / 70% 70% 0 0;
+}
+
+.hill.back {
+    left: -40%;
+    right: 30%;
+    bottom: -30px;
+    height: 180px;
+    background: #3a2770;
+}
+
+.scanlines {
+    position: absolute;
+    inset: 0;
+    z-index: 300;
+    pointer-events: none;
+    background: repeating-linear-gradient(rgba(0, 0, 0, 0.1) 0 2px, transparent 2px 4px);
+}
+
+
+/* ==========================================
+   상단 HUD : 스테이지 / 점수 / 진행 게이지
+========================================== */
+
+.hud {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    right: 12px;
+    z-index: 10;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+
+    pointer-events: none;
+}
+
+.hud-left,
+.hud-right {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.hud-left {
+    align-items: flex-start;
+}
+
+.hud-right {
+    align-items: flex-end;
+}
+
+.chip {
+    font-family: var(--font-en);
+    font-size: 10px;
+    color: var(--ink);
+
+    background: var(--yellow);
+    border: 4px solid var(--ink);
+    padding: 6px 8px 5px;
+    box-shadow: 0 4px 0 var(--ink);
+}
+
+.chip.boss {
+    background: var(--red);
+    color: #fff;
+    animation: bossFlash 0.8s steps(1) infinite;
+}
+
+.score {
+    font-family: var(--font-en);
+    font-size: 9px;
+    color: var(--yellow);
+    -webkit-text-stroke: 3px var(--ink);
+    paint-order: stroke fill;
+}
+
+.gauge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.gauge b {
+    font-family: var(--font-en);
+    font-size: 9px;
+    font-weight: 400;
+    color: var(--yellow);
+    -webkit-text-stroke: 3px var(--ink);
+    paint-order: stroke fill;
+}
+
+.bar {
+    width: 96px;
+    height: 18px;
+
+    border: 4px solid var(--ink);
+    border-radius: 10px;
+    background: #fff;
+    box-shadow: 0 3px 0 var(--ink);
+
+    overflow: hidden;
+}
+
+/* 진행 게이지 : JS가 width를 페이지에 맞게 바꿈 */
+#progressBar {
+    display: block;
+    height: 100%;
+    width: 16.6%;
+
+    background: linear-gradient(#ff7a5c, #d42a1c);
+    box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.4);
+
+    transition: width 0.4s steps(4);
+}
+
+.hearts {
+    font-size: 18px;
+    color: var(--red);
+    -webkit-text-stroke: 3px var(--ink);
+    paint-order: stroke fill;
+    letter-spacing: 1px;
+}
+
+
+/* ==========================================
+   공통 애니메이션 (일부러 뚝뚝 끊기게 steps 사용)
+========================================== */
+
+@keyframes blink {
+    50% { opacity: 0; }
+}
+
+/* 보스 표시 : 사라지지 않고 빨강 ↔ 노랑으로 번쩍 */
+@keyframes bossFlash {
+    50% {
+        background: var(--yellow);
+        color: var(--ink);
+    }
+}
+
+@keyframes bob {
+    50% { transform: translateY(-6px); }
+}
+
+@keyframes wobble {
+    0% { transform: rotate(-3deg); }
+    100% { transform: rotate(2deg) scale(1.04); }
+}
+
+@keyframes hop {
+    to { transform: translateY(-10px); }
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes poke {
+    50% { translate: -6px 6px; }
+}
+
+
+/* ==========================================
+   페이지
+========================================== */
+
+.page {
+    position: absolute;
+
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 100%;
+
+    /* 위쪽은 HUD 자리 */
+    padding:
+        84px
+        clamp(16px, 5vw, 20px)
+        30px;
+
+    display: flex;
+    flex-direction: column;
+
+    justify-content: center;
+    align-items: center;
+
+    z-index: 1;
+
+    opacity: 0;
+    pointer-events: none;
+
+    transform: translateY(20px);
+
+    transition:
+        all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+    overflow: hidden;
+}
+
+.page.active {
+    opacity: 1;
+    pointer-events: auto;
+
+    transform: translateY(0);
+}
+
+.content {
+    width: 100%;
+    max-width: 380px;
+
+    text-align: center;
+
+    min-width: 0;
+}
+
+p {
+    line-height: 1.6;
+}
+
+
+/* ==========================================
+   제목 / 스테이지 표시 / 안내 문구
+========================================== */
+
+h1 {
+    font-family: var(--font-en);
+    font-size: clamp(36px, 11vw, 44px);
+    font-weight: 400;
+    line-height: 1;
+
+    color: var(--yellow);
+    -webkit-text-stroke: 10px var(--ink);
+    paint-order: stroke fill;
+    text-shadow: 6px 6px 0 var(--red), 10px 10px 0 var(--ink);
+
+    animation: wobble 0.5s steps(2) infinite;
+
+    margin-bottom: 14px;
+}
+
+.name-tag {
+    display: inline-block;
+
+    font-weight: 700;
+    font-size: clamp(24px, 7.5vw, 30px);
+    color: #fff;
+    -webkit-text-stroke: 8px var(--ink);
+    paint-order: stroke fill;
+    text-shadow: 0 5px 0 var(--ink);
+
+    transform: rotate(-3deg);
+}
+
+.stage-tag {
+    display: inline-block;
+
+    font-family: var(--font-en);
+    font-size: 10px;
+    color: var(--ink);
+
+    background: var(--cyan);
+    border: 4px solid var(--ink);
+    padding: 6px 8px 5px;
+    box-shadow: 0 4px 0 var(--ink);
+
+    transform: rotate(-2deg);
+
+    margin-bottom: 14px;
+}
+
+.stage-tag.boss {
+    background: var(--red);
+    color: #fff;
+    animation: bossFlash 0.8s steps(1) infinite;
+}
+
+h2 {
+    font-size: clamp(1.35rem, 6.2vw, 1.65rem);
+    font-weight: 700;
+    line-height: 1.3;
+
+    color: #fff;
+    -webkit-text-stroke: 7px var(--ink);
+    paint-order: stroke fill;
+    text-shadow: 0 4px 0 var(--ink);
+
+    margin-bottom: 10px;
+}
+
+.sub-text {
+    font-size: clamp(0.8rem, 3.5vw, 0.9rem);
+    color: var(--cyan);
+    text-shadow: 0 2px 0 var(--ink);
+
+    margin-bottom: 18px;
+
+    line-height: 1.5;
+}
+
+
+/* ==========================================
+   PAGE 1 - 첫 화면 이미지 + 대화창
+========================================== */
+
+.intro-item {
+    position: relative;
+
+    width: clamp(150px, 46vw, 180px);
+    height: clamp(150px, 46vw, 180px);
+
+    margin: 8px auto 4px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 뒤에서 끊기며 도는 별빛 */
+.burst {
+    position: absolute;
+    inset: -16px;
+    border-radius: 50%;
+
+    background: repeating-conic-gradient(rgba(255, 233, 107, 0.55) 0 12deg, transparent 12deg 24deg);
+    -webkit-mask: radial-gradient(circle, #000 30%, transparent 70%);
+            mask: radial-gradient(circle, #000 30%, transparent 70%);
+
+    animation: spin 4s steps(24) infinite;
+}
+
+/*
+ * 첫 화면 이미지 (intro.png)
+ * 크기를 바꾸려면 width / height 값을 조절.
+ * 흑백으로 바꾸려면 filter 에 grayscale(100%) 추가.
+ */
+.intro-img {
+    position: relative;
+    display: block;
+
+    width: clamp(110px, 34vw, 140px);
+    height: clamp(110px, 34vw, 140px);
+
+    object-fit: contain;
+
+    filter: drop-shadow(0 6px 0 rgba(0, 0, 0, 0.45));
+
+    animation: hop 0.6s steps(3) infinite alternate;
+
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+.intro-fallback {
+    position: relative;
+    font-size: clamp(4.5rem, 22vw, 6rem);
+    filter: drop-shadow(0 6px 0 rgba(0, 0, 0, 0.45));
+    animation: hop 0.6s steps(3) infinite alternate;
+}
+
+/* RPG 대화창 */
+.dialog {
+    position: relative;
+
+    width: 100%;
+    text-align: left;
+
+    background: #fff;
+    color: var(--ink);
+
+    border: 5px solid var(--ink);
+    border-radius: 14px;
+    box-shadow: inset 0 -6px 0 #e3dcf5, 0 6px 0 var(--ink);
+
+    padding: 24px 16px 20px;
+
+    font-size: clamp(0.85rem, 3.8vw, 0.95rem);
+
+    margin: 22px 0 26px;
+
+    transform: rotate(-1deg);
+}
+
+.dialog .who {
+    position: absolute;
+    top: -18px;
+    left: 14px;
+
+    font-family: var(--font-en);
+    font-size: 10px;
+    color: #fff;
+
+    background: var(--red);
+    border: 4px solid var(--ink);
+    padding: 5px 8px 4px;
+}
+
+.dialog .next-mark {
+    position: absolute;
+    right: 12px;
+    bottom: 4px;
+    color: var(--red);
+    animation: blink 0.8s steps(1) infinite;
+}
+
+/* PLAY 버튼 + CLICK! */
+.play-wrap {
+    position: relative;
+    display: inline-block;
+}
+
+.click-hint {
+    position: absolute;
+    top: -4px;
+    left: calc(100% + 4px);
+
+    font-family: var(--font-en);
+    font-size: 12px;
+    color: var(--yellow);
+    -webkit-text-stroke: 5px var(--ink);
+    paint-order: stroke fill;
+
+    transform: rotate(12deg);
+    animation: poke 0.4s steps(2) infinite;
+
+    pointer-events: none;
+}
+
+
+/* ==========================================
+   PAGE 2 - 케이크
+========================================== */
+
+.cake-container {
+    position: relative;
+
+    width: 100%;
+
+    height: clamp(150px, 42vw, 200px);
+
+    margin-top: clamp(55px, 25vw, 110px);
+
+    display: flex;
+
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.cake-img-box {
+    width: min(220px, 70vw);
+
+    height: clamp(140px, 48vw, 180px);
+
+    display: flex;
+
+    justify-content: center;
+    align-items: flex-start;
+
+    position: relative;
+
+    z-index: 1;
+
+    overflow: visible;
+}
+
+.cake-img-box img {
+    display: block;
+
+    width: auto;
+    height: auto;
+
+    max-width: 100%;
+    max-height: 100%;
+
+    object-fit: contain;
+
+    filter: drop-shadow(0 6px 0 rgba(0, 0, 0, 0.45));
+
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+.cake-placeholder {
+    font-size: clamp(5rem, 20vw, 7rem);
+}
+
+
+/* ==========================================
+   도망가는 촛불
+========================================== */
+
+.runaway-candle {
+    position: absolute;
+
+    top: 170px;
+    left: 50%;
+
+    transform: translateX(-50%);
+
+    /*
+     * 모바일에서는 화면 폭에 따라 조금 작아짐.
+     * JS에서도 이 실제 크기를 읽어서 이동 범위를 계산함.
+     */
+    width: clamp(88px, 28vw, 120px);
+    height: clamp(118px, 38vw, 160px);
+
+    z-index: 100;
+
+    cursor: pointer;
+
+    transition:
+        left 0.18s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+        top 0.18s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+        transform 0.18s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+    display: none;
+
+    touch-action: manipulation;
+}
+
+/* 촛불만 떨고 잡고 있는 햄스터는 가만히 */
+.runaway-candle.grabbed #candleCanvas {
+    animation: grabShake 0.15s infinite alternate;
+}
+
+@keyframes grabShake {
+
+    /* JS가 left를 이미 가운데로 계산하므로 translateX(-50%)는 쓰지 않음 */
+    0% {
+        transform: rotate(-3deg);
+    }
+
+    100% {
+        transform: rotate(3deg);
+    }
+}
+
+/*
+ * 잡는 햄스터.
+ * 촛불 박스 기준 %로 배치해서 화면 크기가 바뀌어도
+ * 몸은 촛불 왼쪽, 팔 끝만 촛불 몸통 위에 겹치도록 함.
+ */
+.candle-grabber {
+    display: none;
+
+    position: absolute;
+
+    left: -52%;
+    top: 24%;
+
+    width: 87%;
+    height: auto;
+
+    z-index: 1;
+
+    pointer-events: none;
+
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+.runaway-candle.grabbed .candle-grabber {
+    display: block;
+}
+
+#candleCanvas {
+    display: block;
+
+    width: 100%;
+    height: 100%;
+
+    max-width: 100%;
+    max-height: 100%;
+
+    touch-action: manipulation;
+}
+
+
+/* ==========================================
+   멱살잡이 컷씬
+========================================== */
+
+.gf-grab {
+    position: absolute;
+
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 100%;
+
+    background: rgba(10, 6, 30, 0.92);
+
+    z-index: 200;
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: center;
+    align-items: center;
+
+    overflow: hidden;
+
+    padding: 20px;
+}
+
+.speed-lines {
+    position: absolute;
+
+    width: 200%;
+    height: 200%;
+
+    background: repeating-conic-gradient(
+        from 0deg,
+        rgba(255, 233, 107, 0.2) 0deg 10deg,
+        transparent 10deg 20deg
+    );
+
+    animation: spin 2s steps(16) infinite;
+
+    z-index: 1;
+}
+
+.gf-pop-content {
+    position: relative;
+
+    z-index: 2;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    width: 100%;
+    max-width: 340px;
+
+    animation:
+        flashZoom
+        0.35s
+        steps(4)
+        forwards;
+}
+
+.flash-sfx {
+    font-weight: 700;
+    font-size: clamp(1.8rem, 9vw, 2.4rem);
+
+    color: var(--yellow);
+    -webkit-text-stroke: 10px var(--ink);
+    paint-order: stroke fill;
+    text-shadow: 5px 5px 0 var(--red);
+
+    margin-bottom: -10px;
+
+    transform: rotate(-8deg);
+}
+
+.gf-person-img {
+    width: min(140px, 40vw);
+    height: min(140px, 40vw);
+
+    object-fit: contain;
+
+    filter: drop-shadow(5px 5px 0 var(--ink));
+
+    margin: 10px 0;
+
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+.gf-emoji {
+    font-size: clamp(4rem, 20vw, 6rem);
+
+    filter: drop-shadow(5px 5px 0 var(--ink));
+}
+
+.gf-dialog {
+    color: #fff;
+
+    font-weight: 700;
+
+    font-size: clamp(0.9rem, 4vw, 1.15rem);
+
+    margin-top: 15px;
+
+    background: var(--red);
+
+    padding: 12px 16px;
+
+    border: 5px solid var(--ink);
+    border-radius: 14px;
+
+    box-shadow: 0 6px 0 var(--ink);
+
+    transform: rotate(2deg);
+
+    max-width: 100%;
+
+    text-align: center;
+
+    line-height: 1.5;
+}
+
+@keyframes flashZoom {
+
+    0% {
+        transform: scale(0.1) rotate(-15deg);
+        opacity: 0;
+    }
+
+    80% {
+        transform: scale(1.2) rotate(3deg);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+    }
+}
+
+
+/* ==========================================
+   버튼 (볼록한 플래시 버튼)
+========================================== */
+
+.next-btn,
+.action-btn,
+.prev-btn {
+    position: relative;
+
+    font-family: var(--font-ko);
+    font-weight: 700;
+    font-size: clamp(0.85rem, 3.6vw, 1rem);
+
+    color: #fff;
+    -webkit-text-stroke: 4px var(--ink);
+    paint-order: stroke fill;
+
+    border: 5px solid var(--ink);
+    border-radius: 14px;
+
+    padding: 12px clamp(14px, 5vw, 22px);
+
+    box-shadow:
+        inset 0 -5px 0 rgba(0, 0, 0, 0.2),
+        0 6px 0 var(--ink);
+
+    min-height: 52px;
+
+    cursor: pointer;
+
+    white-space: nowrap;
+
+    touch-action: manipulation;
+}
+
+/* 유리 하이라이트 */
+.next-btn::before,
+.action-btn::before,
+.prev-btn::before {
+    content: "";
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    top: 4px;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 8px;
+}
+
+.next-btn {
+    background: linear-gradient(#ff7a5c 0%, var(--red) 50%, #d42a1c 51%, #ff5a40 100%);
+}
+
+.action-btn {
+    background: linear-gradient(#fff3a0 0%, #ffd83a 50%, #f0b400 51%, #ffd23a 100%);
+}
+
+.prev-btn {
+    background: linear-gradient(#ffffff 0%, #f1edfb 50%, #d9d1f0 51%, #ece7f8 100%);
+    color: var(--ink);
+    -webkit-text-stroke: 0;
+}
+
+.next-btn:active,
+.action-btn:active,
+.prev-btn:active {
+    transform: translateY(4px);
+
+    box-shadow:
+        inset 0 -5px 0 rgba(0, 0, 0, 0.2),
+        0 2px 0 var(--ink);
+}
+
+/* 1페이지 PLAY 버튼은 영문 픽셀 폰트로 크게 */
+.play-btn {
+    font-family: var(--font-en);
+    font-weight: 400;
+    font-size: clamp(15px, 4.6vw, 18px);
+    -webkit-text-stroke: 5px var(--ink);
+
+    padding: 16px 30px 18px;
+}
+
+.nav-buttons {
+    display: flex;
+
+    justify-content: center;
+    align-items: center;
+
+    flex-wrap: wrap;
+
+    gap: 10px;
+
+    margin-top: 22px;
+
+    width: 100%;
+}
+
+
+/* ==========================================
+   PAGE 3 - ? 블록 카드
+========================================== */
+
+.card-slider {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 12px;
+
+    width: 100%;
+}
+
+.flip-card {
+    height: 95px;
+
+    perspective: 1000px;
+
+    cursor: pointer;
+
+    width: 100%;
+
+    touch-action: manipulation;
+}
+
+.flip-card-inner {
+    position: relative;
+
+    width: 100%;
+    height: 100%;
+
+    text-align: center;
+
+    transition: transform 0.4s steps(6);
+
+    transform-style: preserve-3d;
+}
+
+.flip-card.flipped .flip-card-inner {
+    transform: rotateY(180deg);
+}
+
+.flip-card-front,
+.flip-card-back {
+    position: absolute;
+
+    width: 100%;
+    height: 100%;
+
+    backface-visibility: hidden;
+
+    border: 5px solid var(--ink);
+    border-radius: 14px;
+
+    box-shadow: 0 6px 0 var(--ink);
+
+    display: flex;
+
+    align-items: center;
+
+    padding: 10px 14px;
+
+    overflow: hidden;
+}
+
+.flip-card-front {
+    background: var(--panel);
+    color: #fff;
+
+    justify-content: flex-start;
+    gap: 14px;
+}
+
+/* 마리오 ? 블록 */
+.q-block {
+    flex-shrink: 0;
+
+    width: 50px;
+    height: 50px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-family: var(--font-en);
+    font-size: 20px;
+    color: #fff;
+    -webkit-text-stroke: 5px var(--ink);
+    paint-order: stroke fill;
+
+    background:
+        radial-gradient(circle at 7px 7px, var(--ink) 0 2px, transparent 2.5px),
+        radial-gradient(circle at calc(100% - 7px) 7px, var(--ink) 0 2px, transparent 2.5px),
+        radial-gradient(circle at 7px calc(100% - 7px), var(--ink) 0 2px, transparent 2.5px),
+        radial-gradient(circle at calc(100% - 7px) calc(100% - 7px), var(--ink) 0 2px, transparent 2.5px),
+        #ffc21a;
+    border: 4px solid var(--ink);
+    box-shadow:
+        inset 4px 4px 0 #ffe98a,
+        inset -4px -4px 0 #d98a00;
+
+    animation: bob 0.8s steps(2) infinite;
+}
+
+.card-label {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+}
+
+.card-label b {
+    font-family: var(--font-en);
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--yellow);
+    -webkit-text-stroke: 4px var(--ink);
+    paint-order: stroke fill;
+}
+
+.card-label small {
+    font-size: 0.8rem;
+    color: var(--cyan);
+}
+
+.flip-card-back {
+    background: #fff;
+    color: var(--ink);
+
+    transform: rotateY(180deg);
+
+    justify-content: center;
+    text-align: center;
+
+    font-size: clamp(0.78rem, 3.4vw, 0.88rem);
+
+    line-height: 1.5;
+}
+
+
+/* ==========================================
+   PAGE 4 - 편지 (조금 차분하게)
+========================================== */
+
+.letter-box {
+    background: #fffdf6;
+    color: var(--ink);
+
+    border: 5px solid var(--ink);
+    border-radius: 14px;
+
+    box-shadow: 0 6px 0 var(--ink);
+
+    padding: clamp(16px, 5vw, 22px);
+
+    text-align: left;
+
+    line-height: 1.85;
+
+    font-size: clamp(0.8rem, 3.5vw, 0.92rem);
+
+    max-height: 50vh;
+
+    overflow-y: auto;
+
+    -webkit-overflow-scrolling: touch;
+
+    transform: rotate(-1deg);
+}
+
+.letter-box p + p {
+    margin-top: 14px;
+}
+
+.letter-to,
+.letter-from {
+    font-weight: 700;
+}
+
+.letter-from {
+    text-align: right;
+}
+
+
+/* ==========================================
+   PAGE 5 - 소원권 (아이템)
+========================================== */
+
+.coupon-list {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 12px;
+
+    margin-bottom: 10px;
+
+    width: 100%;
+}
+
+.coupon-item {
+    background: var(--panel);
+    color: #fff;
+
+    border: 5px solid var(--ink);
+    border-radius: 14px;
+
+    box-shadow: 0 6px 0 var(--ink);
+
+    padding: 12px clamp(10px, 4vw, 16px);
+
+    font-weight: 700;
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    gap: 8px;
+
+    min-width: 0;
+
+    text-align: left;
+
+    font-size: clamp(0.8rem, 3.6vw, 0.95rem);
+
+    line-height: 1.4;
+}
+
+.coupon-item::after {
+    content: "ITEM";
+
+    flex-shrink: 0;
+
+    font-family: var(--font-en);
+    font-size: 8px;
+
+    background: var(--yellow);
+    color: var(--ink);
+
+    border: 3px solid var(--ink);
+    padding: 4px 6px 3px;
+}
+
+/* 페이지에 들어올 때 하나씩 툭툭 떨어짐 */
+.page.active .coupon-item {
+    animation: itemDrop 0.45s steps(4) both;
+}
+
+.page.active .coupon-item:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.page.active .coupon-item:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes itemDrop {
+    from {
+        transform: translateY(-30px);
+        opacity: 0;
+    }
+}
+
+
+/* ==========================================
+   PAGE 6 - 마지막 한마디
+========================================== */
+
+.final-msg {
+    font-weight: 700;
+
+    color: var(--yellow);
+    -webkit-text-stroke: 6px var(--ink);
+    paint-order: stroke fill;
+    text-shadow: 0 4px 0 var(--ink);
+
+    /* 잡힌 촛불이 들어갈 자리보다는 항상 크게 */
+    margin-top: max(
+        clamp(100px, 25vh, 220px),
+        calc(clamp(118px, 38vw, 160px) + 36px)
+    );
+
+    font-size: clamp(1rem, 4.6vw, 1.2rem);
+
+    line-height: 1.5;
+}
+
+
+/* ==========================================
+   게임 연출 : MISS! / +100 / ITEM GET!
+   (script.js 의 popText 가 만들어서 띄움)
+========================================== */
+
+.pop-text {
+    position: absolute;
+    z-index: 250;
+
+    font-family: var(--font-en);
+    font-size: 14px;
+    color: var(--yellow);
+    -webkit-text-stroke: 5px var(--ink);
+    paint-order: stroke fill;
+
+    white-space: nowrap;
+    pointer-events: none;
+
+    transform: translate(-50%, -50%);
+
+    animation: popUp 0.9s steps(6) forwards;
+}
+
+.pop-text.miss {
+    color: #fff;
+    text-shadow: 3px 3px 0 var(--red);
+}
+
+.pop-text.big {
+    font-size: 18px;
+}
+
+@keyframes popUp {
+    0% {
+        transform: translate(-50%, -50%) scale(0.6);
+        opacity: 1;
+    }
+    25% {
+        transform: translate(-50%, -80%) scale(1.25);
+    }
+    100% {
+        transform: translate(-50%, -180%) scale(1);
+        opacity: 0;
+    }
+}
+
+/* STAGE CLEAR! */
+.stage-clear {
+    position: absolute;
+    inset: 0;
+    z-index: 260;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    pointer-events: none;
+}
+
+.stage-clear span {
+    font-family: var(--font-en);
+    font-size: clamp(22px, 7.5vw, 30px);
+    line-height: 1.3;
+    text-align: center;
+
+    color: var(--yellow);
+    -webkit-text-stroke: 10px var(--ink);
+    paint-order: stroke fill;
+    text-shadow: 6px 6px 0 var(--red), 10px 10px 0 var(--ink);
+
+    animation: clearPop 2.6s steps(10) forwards;
+}
+
+@keyframes clearPop {
+    0% {
+        transform: scale(0.2) rotate(-10deg);
+        opacity: 0;
+    }
+    15% {
+        transform: scale(1.2) rotate(3deg);
+        opacity: 1;
+    }
+    25%, 80% {
+        transform: scale(1) rotate(-2deg);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1) rotate(-2deg);
+        opacity: 0;
+    }
+}
+
+
+/* ==========================================
+   아주 작은 모바일
+   320px ~ 360px
+========================================== */
+
+@media (max-width: 360px) {
+
+    .page {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+
+    h2 {
+        font-size: 1.25rem;
+    }
+
+    .cake-container {
+        margin-top: 90px; /* 케이크 위에 올라간 촛불 자리 */
+    }
+
+    .nav-buttons {
+        gap: 6px;
+    }
+
+    .next-btn,
+    .action-btn,
+    .prev-btn {
+        padding: 10px 11px;
+        font-size: 0.78rem;
+    }
+
+    .play-btn {
+        padding: 14px 22px 16px;
+        font-size: 14px;
+    }
+
+    .letter-box {
+        font-size: 0.76rem;
+    }
+
+    .coupon-item {
+        font-size: 0.74rem;
+    }
+
+    .bar {
+        width: 76px;
+    }
+}
+
+
+/* ==========================================
+   높이가 짧은 모바일
+   가로모드 / 작은 화면
+========================================== */
+
+@media (max-height: 700px) {
+
+    .page {
+        padding-top: 78px;
+        padding-bottom: 16px;
+    }
+
+    .stage-tag {
+        margin-bottom: 8px;
+    }
+
+    .intro-item {
+        width: 130px;
+        height: 130px;
+    }
+
+    .intro-img {
+        width: 100px;
+        height: 100px;
+    }
+
+    .intro-fallback {
+        font-size: 4.2rem;
+    }
+
+    .dialog {
+        margin: 18px 0 20px;
+    }
+
+    .cake-container {
+        margin-top: 90px; /* 케이크 위에 올라간 촛불 자리 */
+        height: 130px;
+    }
+
+    .cake-img-box {
+        height: 125px;
+    }
+
+    .flip-card {
+        height: 76px;
+    }
+
+    .q-block {
+        width: 42px;
+        height: 42px;
+        font-size: 16px;
+    }
+
+    .letter-box {
+        max-height: 40vh;
+    }
+
+    .nav-buttons {
+        margin-top: 16px;
+    }
+
+    /* 잡힌 촛불(높이 clamp(118px, 38vw, 160px))이 들어갈 자리 확보 */
+    .final-msg {
+        margin-top: calc(clamp(118px, 38vw, 160px) + 36px);
+    }
+}
+
+
+/* ==========================================
+   PC에서는 기존 느낌 유지
+========================================== */
+
+@media (min-width: 421px) {
+
+    .app-container {
+        height: min(100dvh, 850px);
+    }
+}
