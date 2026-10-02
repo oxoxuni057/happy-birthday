@@ -2186,3 +2186,82 @@ window.onload = () => {
     }
 
 };
+
+/* ==========================================
+   편지 전체를 이미지(PNG)로 저장
+   (스크롤에 가려진 부분까지 전부 한 장으로)
+========================================== */
+
+async function saveLetter() {
+
+    const btn = document.getElementById('saveLetterBtn');
+    const letter = document.querySelector('#page-4 .letter-box');
+
+    if (!letter || typeof html2canvas !== 'function') {
+
+        alert('이미지 저장을 불러오지 못했어. 인터넷 연결을 확인해 줘!');
+        return;
+
+    }
+
+    const label = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = '저장 중...';
+
+    // 화면 밖에 편지 복사본을 펼쳐 놓고 찍기 (스크롤/기울기 제거)
+    const wrap = document.createElement('div');
+    wrap.style.cssText =
+        'position:fixed; left:-10000px; top:0; width:440px;' +
+        'padding:28px 24px 34px; background:#3b2a7a;';
+
+    const clone = letter.cloneNode(true);
+    clone.style.maxHeight = 'none';
+    clone.style.overflow = 'visible';
+    clone.style.transform = 'none';
+    clone.style.fontSize = '14px';
+
+    wrap.appendChild(clone);
+    document.body.appendChild(wrap);
+
+    try {
+
+        if (document.fonts && document.fonts.ready) {
+            await document.fonts.ready;
+        }
+
+        const canvas = await html2canvas(wrap, {
+            scale: 2,
+            backgroundColor: null,
+            useCORS: true
+        });
+
+        const blob = await new Promise(resolve =>
+            canvas.toBlob(resolve, 'image/png')
+        );
+
+        const fileName = 'birthday-letter.png';
+
+        // PC·모바일 모두 공유 시트 없이 바로 파일로 다운로드
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+    } catch (err) {
+
+        console.error(err);
+        alert('이미지 저장에 실패했어. 다시 한 번 눌러 줘!');
+
+    } finally {
+
+        wrap.remove();
+        btn.disabled = false;
+        btn.textContent = label;
+
+    }
+
+}

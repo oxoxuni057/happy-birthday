@@ -12,6 +12,8 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap">
 
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- 편지를 이미지로 저장할 때 사용 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -363,6 +365,16 @@
                     </p>
 
                 </div>
+
+
+                <!-- 편지 전체를 이미지(PNG)로 저장 -->
+                <button
+                    class="action-btn save-letter-btn"
+                    id="saveLetterBtn"
+                    onclick="saveLetter()"
+                >
+                    편지 이미지로 저장 💾
+                </button>
 
 
                 <div class="nav-buttons">
